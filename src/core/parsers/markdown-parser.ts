@@ -2,6 +2,14 @@ import { Spec, Change, Requirement, Scenario, Delta, DeltaOperation } from '../s
 import { buildCodeFenceMask, extractRequirementText, hasScenarioBody } from './requirement-text.js';
 import { normalizeRequirementName, scenarioNameFromHeaderText } from './requirement-blocks.js';
 
+/**
+ * Drop an ATX closing run of `#`s. Like requirement names, only a run preceded
+ * by a space or tab closes the heading, so `C#` keeps its `#`.
+ */
+function stripClosingSequence(title: string): string {
+  return title.replace(/[ \t]+#+[ \t]*$/, '').trim();
+}
+
 export interface Section {
   level: number;
   title: string;
@@ -93,7 +101,9 @@ export class MarkdownParser {
       
       if (headerMatch) {
         const level = headerMatch[1].length;
-        const title = headerMatch[2].trim();
+        // `## Purpose ##` is the same heading as `## Purpose`: drop a CommonMark
+        // closing run, as requirement and scenario names already do.
+        const title = stripClosingSequence(headerMatch[2]);
         const content = this.getContentUntilNextHeader(i + 1, level);
         
         const section: Section = {

@@ -34,6 +34,9 @@ export function foldRequirementName(name: string): string {
   return normalizeRequirementName(name).toLowerCase().replace(/\s+/g, ' ');
 }
 
+/** The main spec's `## Requirements` header, with an optional ATX closing run. */
+export const REQUIREMENTS_SECTION_HEADER_REGEX = /^##\s+Requirements(?:[ \t]+#+)?\s*$/i;
+
 /** The canonical requirement header the delta reader recognizes. */
 const REQUIREMENT_HEADER_REGEX = /^###\s*Requirement:\s*(.+)\s*$/i;
 
@@ -44,7 +47,7 @@ export function extractRequirementsSection(content: string): RequirementsSection
   const normalized = normalizeLineEndings(content);
   const lines = normalized.split('\n');
   const fenceMask = buildCodeFenceMask(lines);
-  const reqHeaderIndex = lines.findIndex((l, i) => !fenceMask[i] && /^##\s+Requirements\s*$/i.test(l));
+  const reqHeaderIndex = lines.findIndex((l, i) => !fenceMask[i] && REQUIREMENTS_SECTION_HEADER_REGEX.test(l));
 
   if (reqHeaderIndex === -1) {
     // No requirements section; create an empty one at the end
